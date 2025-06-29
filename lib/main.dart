@@ -1,11 +1,17 @@
+import 'package:design_pattern_login/View/AreaMonitor.dart';
+import 'package:design_pattern_login/View/NavigationMenu.dart';
+import 'package:design_pattern_login/View/Statistical.dart';
 import 'package:design_pattern_login/View/ViewLogin.dart';
+import 'package:design_pattern_login/View/Warning.dart';
 import 'package:design_pattern_login/ViewModel/AuthViewModel.dart';
+import 'package:design_pattern_login/ViewModel/HomePageViewModel.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'View/HomePage.dart';
 import 'View/ViewRegister.dart';
 
 Future<void> main() async {
@@ -20,11 +26,15 @@ Future<void> main() async {
       print('Connect failed');
     }
   }
-  runApp(MultiProvider(providers: [
-    ChangeNotifierProvider(create: (_) => Auth_ViewModel()),
-  ],
-    child: const MyApp(),
-  ));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => Auth_ViewModel()),
+        ChangeNotifierProvider(create: (_) => HomePageViewModel()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -32,19 +42,47 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(routerConfig: _router,debugShowCheckedModeBanner: false);
+    return MaterialApp.router(
+      routerConfig: _router,
+      debugShowCheckedModeBanner: false,
+    );
   }
 }
 
-final _router = GoRouter(initialLocation: '/',
-    routes: <RouteBase>[
-      GoRoute(
-          path: '/',
-          builder: (BuildContext context, GoRouterState state) => Login(),
-        routes: [
-          GoRoute(path: 'Register', builder: (BuildContext context, GoRouterState state) => Register(),
-          )
-        ]
-      )
-    ]);
+final _router = GoRouter(
+  initialLocation: '/',
+  routes: <RouteBase>[
+    GoRoute(
+      path: '/',
+      builder: (context, state) => Login(),
+      routes: [
+        GoRoute(
+          path: 'Register',
+          builder: (context, state) => Register(),
+        ),
+      ],
+    ),
 
+    ShellRoute(
+      builder: (context, state, child) => NavigationMenu(child: child),
+      routes: [
+        GoRoute(
+          path: '/HomePage',
+          builder: (context, state) => HomePage(),
+        ),
+        GoRoute(
+          path: '/AreaMonitor',
+          builder: (context, state) => AreaMontitor(),
+        ),
+        GoRoute(
+          path: '/Warning',
+          builder: (context, state) => Warning(),
+        ),
+        GoRoute(
+          path: '/Statistical',
+          builder: (context, state) => Statistical(),
+        ),
+      ],
+    ),
+  ],
+);

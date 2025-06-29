@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
 import '../ViewModel/AuthViewModel.dart';
 
 class Login extends StatefulWidget {
@@ -18,7 +17,7 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    final VM_Login = Provider.of<Auth_ViewModel>(context,listen: false);
+    final VM_Login = Provider.of<Auth_ViewModel>(context, listen: false);
     return Scaffold(
       body: Container(
         padding: EdgeInsets.all(20),
@@ -39,16 +38,18 @@ class _LoginState extends State<Login> {
                 children: [
                   SizedBox(height: 30),
                   buildTextField(
-                      controller: VM_Login.emailController,
-                      label: "Email",
-                      pass: false,
-                      validator: VM_Login.validateEmail),
+                    controller: VM_Login.emailController,
+                    label: "Email",
+                    pass: false,
+                    validator: VM_Login.validateEmail,
+                  ),
                   SizedBox(height: 15),
                   buildTextField(
-                      controller: VM_Login.passwordController,
-                      label: "Password",
-                      pass: true,
-                      validator:VM_Login.validatePassword),
+                    controller: VM_Login.passwordController,
+                    label: "Password",
+                    pass: true,
+                    validator: VM_Login.validatePassword,
+                  ),
                   SizedBox(height: 20),
                 ],
               ),
@@ -72,7 +73,12 @@ class _LoginState extends State<Login> {
             ),
             SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  context.push('/HomePage');
+                  return;
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFB02700),
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -101,7 +107,7 @@ class _LoginState extends State<Login> {
   }) {
     return TextFormField(
       controller: controller,
-      obscureText: hidePassword,
+      obscureText: pass ? hidePassword : false,
       validator: validator,
       decoration: InputDecoration(
         label: Text(
@@ -110,22 +116,22 @@ class _LoginState extends State<Login> {
         ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
         suffixIcon:
-        pass
-            ? IconButton(
-          icon: Icon(
-            hidePassword
-                ? Icons.visibility_off_rounded
-                : Icons.visibility,
-            color: Colors.black87,
-            size: 22,
-          ),
-          onPressed: () {
-            setState(() {
-              hidePassword = !hidePassword;
-            });
-          },
-        )
-            : null,
+            pass
+                ? IconButton(
+                  icon: Icon(
+                    hidePassword
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility,
+                    color: Colors.black87,
+                    size: 22,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      hidePassword = !hidePassword;
+                    });
+                  },
+                )
+                : null,
         contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       ),
     );

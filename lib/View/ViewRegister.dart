@@ -12,88 +12,114 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  TextEditingController confirmPasswordController = TextEditingController();
   bool hidePassword = true;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    final VM_Login = Provider.of<Auth_ViewModel>(context,listen: false);
+    final VM_Login = Provider.of<Auth_ViewModel>(context, listen: false);
     return Scaffold(
       body: Container(
         padding: EdgeInsets.all(20),
         decoration: BoxDecoration(color: Colors.white),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                flex: 1,
-                child: Text(
-                  "Register",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              flex: 1,
+              child: Text(
+                "Register",
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 30,),
-              buildTextField(emailController, "Email", false),
-              SizedBox(height: 10),
-              buildTextField(passwordController, "Password", true),
-              SizedBox(height: 10),
-              buildTextField(
-                confirmPasswordController,
-                "Confirm Password",
-                true,
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+            ),
+            Form(
+              key: _formKey,
+              child: Column(
                 children: [
-                  TextButton(
-                    onPressed: () => {context.push('/')},
-                    child: Text(
-                      "Đã có tài khoản?",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red.shade600,
-                        fontSize: 15,
-                      ),
-                    ),
+                  SizedBox(height: 30),
+                  buildTextField(
+                    controller: VM_Login.emailController,
+                    label: "Email",
+                    pass: false,
+                    validator: VM_Login.validateEmail,
+                  ),
+                  SizedBox(height: 10),
+                  buildTextField(
+                    controller: VM_Login.passwordController,
+                    label: "Password",
+                    pass: true,
+                    validator: VM_Login.validatePassword,
+                  ),
+                  SizedBox(height: 10),
+                  buildTextField(
+                    controller: VM_Login.confirmPasswordController,
+                    label: "Confirm Password",
+                    pass: true,
+                    validator: VM_Login.validateConfirmPassword,
                   ),
                 ],
               ),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFB02700),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  minimumSize: const Size(200, 30),
-                ),
-                child: Text(
-                  "Confirm",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
+            ),
+
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => {context.push('/')},
+                  child: Text(
+                    "Đã có tài khoản?",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red.shade600,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
+              ],
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  print('Done Validate');
+                  return;
+                }
+                else{
+                  print('Lỗi hành vi của người dùng : ${VM_Login.messageError}');
+                  return;
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFB02700),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                minimumSize: const Size(200, 30),
               ),
-            ],
-          ),
+              child: Text(
+                "Confirm",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 17,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget buildTextField(
-    TextEditingController controller,
-    String label,
-    bool pass,
-  ) {
-    return TextField(
+  Widget buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required bool pass,
+    required String? Function(String?) validator,
+  }) {
+    return TextFormField(
       controller: controller,
       obscureText: hidePassword,
+      validator: validator,
       decoration: InputDecoration(
         label: Text(
           label,
