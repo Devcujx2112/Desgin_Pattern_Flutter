@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Auth_ViewModel extends ChangeNotifier {
+  final String aPIRealTime = "https://flutter-api-2f232-default-rtdb.firebaseio.com";
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();

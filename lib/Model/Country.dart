@@ -1,23 +1,17 @@
 class Country{
+  String _uid;
   String _name;
   double _latitude;
   double _longtitude;
-  int _quantity;
   String _createAt;
 
-  Country(this._name, this._latitude, this._longtitude, this._quantity,
+  Country(this._uid, this._name, this._latitude, this._longtitude,
       this._createAt);
 
   String get createAt => _createAt;
 
   set createAt(String value) {
     _createAt = value;
-  }
-
-  int get quantity => _quantity;
-
-  set quantity(int value) {
-    _quantity = value;
   }
 
   double get longtitude => _longtitude;
@@ -36,6 +30,12 @@ class Country{
 
   set name(String value) {
     _name = value;
+  }
+
+  String get uid => _uid;
+
+  set uid(String value) {
+    _uid = value;
   }
 
 

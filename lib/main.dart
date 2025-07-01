@@ -3,6 +3,7 @@ import 'package:design_pattern_login/View/NavigationMenu.dart';
 import 'package:design_pattern_login/View/Statistical.dart';
 import 'package:design_pattern_login/View/ViewLogin.dart';
 import 'package:design_pattern_login/View/Warning.dart';
+import 'package:design_pattern_login/ViewModel/AreaMonitorViewModel.dart';
 import 'package:design_pattern_login/ViewModel/AuthViewModel.dart';
 import 'package:design_pattern_login/ViewModel/HomePageViewModel.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -10,7 +11,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
 import 'View/HomePage.dart';
 import 'View/ViewRegister.dart';
 
@@ -29,8 +29,9 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => Auth_ViewModel()),
-        ChangeNotifierProvider(create: (_) => HomePageViewModel()),
+        ChangeNotifierProvider<Auth_ViewModel>(create: (_) => Auth_ViewModel()),
+        ChangeNotifierProvider<HomePageViewModel>(create: (_) => HomePageViewModel()),
+        ChangeNotifierProvider<AreaMontitorViewModel>(create: (_) => AreaMontitorViewModel()),
       ],
       child: const MyApp(),
     ),
