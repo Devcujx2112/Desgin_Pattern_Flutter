@@ -10,13 +10,13 @@ class HomePageViewModel extends ChangeNotifier {
   final String geoJsonFile = "assets/customMap.json";
   TextEditingController searchCountry = TextEditingController();
 
-  Future<Map<String, List<LatLng>>> ColorCountries(
+  Future<Map<String, List<List<LatLng>>>> ColorCountries(
     Map<String, dynamic> data,
   ) async {
     await CountryCodes.init();
 
     final geoJson = await _loadGeoJSON();
-    final countryPolygons = <String, List<LatLng>>{};
+    final countryPolygons = <String, List<List<LatLng>>>{};
 
     for (final rawName in _extractCountries(data)) {
       try {
@@ -24,8 +24,8 @@ class HomePageViewModel extends ChangeNotifier {
           (c) => _matchesCountry(c, rawName),
         );
 
-        final polygon = _findPolygonByISO(geoJson, country.alpha3Code!);
-        if (polygon != null) countryPolygons[rawName] = polygon;
+        final polygons = _findPolygonsByISO(geoJson, country.alpha3Code!);
+        if (polygons.isNotEmpty) countryPolygons[rawName] = polygons;
       } catch (e) {
         print('Không tìm thấy đất nước cho "$rawName"');
       }
@@ -34,7 +34,11 @@ class HomePageViewModel extends ChangeNotifier {
     return countryPolygons;
   }
 
-  List<LatLng>? _findPolygonByISO(GeoJSONFeatureCollection geoJson, String isoCode) {
+  List<List<LatLng>> _findPolygonsByISO(
+    GeoJSONFeatureCollection geoJson,
+    String isoCode,
+  ) {
+    final polygons = <List<LatLng>>[];
     for (final feature in geoJson.features) {
       final props = feature?.properties;
       final geoJsonIso3 = props?['iso_a3']?.toString().toUpperCase();
@@ -44,23 +48,32 @@ class HomePageViewModel extends ChangeNotifier {
 
         if (geometry is GeoJSONPolygon) {
           try {
-            final coordinates = geometry.coordinates.first;
-            return coordinates.map((coord) => LatLng(coord[1], coord[0])).toList();
+            for (final coordinates in geometry.coordinates) {
+              polygons.add(
+                coordinates.map((coord) => LatLng(coord[1], coord[0])).toList(),
+              );
+            }
           } catch (e) {
             print('Lỗi khi xử lý Polygon: $e');
           }
-        }
-        else if (geometry is GeoJSONMultiPolygon) {
+        } else if (geometry is GeoJSONMultiPolygon) {
           try {
-            final firstPolygon = geometry.coordinates.first.first;
-            return firstPolygon.map((coord) => LatLng(coord[1], coord[0])).toList();
+            for (final polygon in geometry.coordinates) {
+              for (final coordinates in polygon) {
+                polygons.add(
+                  coordinates
+                      .map((coord) => LatLng(coord[1], coord[0]))
+                      .toList(),
+                );
+              }
+            }
           } catch (e) {
             print('Lỗi khi xử lý MultiPolygon: $e');
           }
         }
       }
     }
-    return null;
+    return polygons;
   }
 
   bool _matchesCountry(CountryDetails country, String inputName) {

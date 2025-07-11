@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:design_pattern_login/Model/Country.dart';
 import 'package:design_pattern_login/Service/AreaMonitor_Service.dart';
 import 'package:flutter/material.dart';

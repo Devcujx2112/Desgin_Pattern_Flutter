@@ -18,7 +18,7 @@ class _HomePageState extends State<HomePage> {
   bool _isLoading = true;
   Map<String, dynamic> dataCountry = {};
   final MapController _mapController = MapController();
-  Future<Map<String, List<LatLng>>> _polygonsFuture = Future.value({});
+  Future<Map<String, List<List<LatLng>>>> _polygonsFuture = Future.value({});
 
   @override
   void initState() {
@@ -98,7 +98,8 @@ class _HomePageState extends State<HomePage> {
                       size: 50,
                     );
                   }
-                  final polygons = snapshot.data ?? {};
+                  final polygons =
+                      snapshot.data as Map<String, List<List<LatLng>>>? ?? {};
                   return FlutterMap(
                     mapController: _mapController,
                     options: MapOptions(
@@ -118,11 +119,13 @@ class _HomePageState extends State<HomePage> {
                       PolygonLayer(
                         polygons:
                             polygons.entries
-                                .map(
-                                  (entry) => Polygon(
-                                    points: entry.value,
-                                    color: _getColorByCountry(entry.key),
-                                    borderStrokeWidth: 1,
+                                .expand(
+                                  (entry) => entry.value.map(
+                                    (polygonPoints) => Polygon(
+                                      points: polygonPoints,
+                                      color: _getColorByCountry(entry.key),
+                                      borderStrokeWidth: 1,
+                                    ),
                                   ),
                                 )
                                 .toList(),

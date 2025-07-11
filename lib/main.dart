@@ -6,7 +6,6 @@ import 'package:design_pattern_login/View/Warning.dart';
 import 'package:design_pattern_login/ViewModel/AreaMonitorViewModel.dart';
 import 'package:design_pattern_login/ViewModel/AuthViewModel.dart';
 import 'package:design_pattern_login/ViewModel/HomePageViewModel.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -16,16 +15,7 @@ import 'View/ViewRegister.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await Firebase.initializeApp();
-    if (kDebugMode) {
-      print('Connect to Firebase successfully');
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('Connect failed');
-    }
-  }
+
   runApp(
     MultiProvider(
       providers: [
