@@ -19,6 +19,7 @@ class _HomePageState extends State<HomePage> {
   Map<String, dynamic> dataCountry = {};
   final MapController _mapController = MapController();
   Future<Map<String, List<List<LatLng>>>> _polygonsFuture = Future.value({});
+  Future<Map<String, LatLng>> _countryCentersFuture = Future.value({});
 
   @override
   void initState() {
@@ -31,12 +32,11 @@ class _HomePageState extends State<HomePage> {
     _mapController.mapEventStream.listen((event) {
       if (event is MapEventMove) {
         final currentLat = _mapController.camera.center.latitude;
-        // Nếu vượt quá giới hạn vĩ độ (-85 đến 85)
         if (currentLat < -85 || currentLat > 85) {
           _mapController.move(
             LatLng(
-              currentLat.clamp(-85.0, 85.0), // Ép vĩ độ về khoảng an toàn
-              _mapController.camera.center.longitude, // Giữ nguyên kinh độ
+              currentLat.clamp(-85.0, 85.0),
+              _mapController.camera.center.longitude,
             ),
             _mapController.camera.zoom,
           );
@@ -56,6 +56,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         dataCountry = data;
         _polygonsFuture = VM_HomePage.ColorCountries(data);
+        _countryCentersFuture = VM_HomePage.CalculateCountryCenters(data);
         _isLoading = false;
       });
     }
@@ -90,45 +91,66 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 10),
             Expanded(
               child: FutureBuilder(
-                future: _polygonsFuture,
-                builder: (context, snapshot) {
+                future: Future.wait([_polygonsFuture, _countryCentersFuture]),
+                builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
                   if (!snapshot.hasData) {
                     return LoadingAnimationWidget.inkDrop(
                       color: Colors.green,
                       size: 50,
                     );
                   }
-                  final polygons =
-                      snapshot.data as Map<String, List<List<LatLng>>>? ?? {};
+
+                  final polygons = snapshot.data![0] as Map<String, List<List<LatLng>>>;
+                  final countryCenters = snapshot.data![1] as Map<String, LatLng>;
+
                   return FlutterMap(
                     mapController: _mapController,
                     options: MapOptions(
-                      initialCenter: LatLng(41.185, 19.638),
-                      initialZoom: 3,
+                      initialCenter: LatLng(16.52, 111.63),
+                      initialZoom: 4,
                     ),
                     children: [
                       TileLayer(
                         urlTemplate:
-                            'https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=erZm4UfkUOKJaSLKD2rP',
+                        'https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=erZm4UfkUOKJaSLKD2rP',
                         userAgentPackageName: 'com.example.app',
                         tileSize: 256,
-                        maxZoom: 22,
-                        minZoom: 0,
-                        subdomains: const [],
                       ),
                       PolygonLayer(
-                        polygons:
-                            polygons.entries
-                                .expand(
-                                  (entry) => entry.value.map(
-                                    (polygonPoints) => Polygon(
-                                      points: polygonPoints,
-                                      color: _getColorByCountry(entry.key),
-                                      borderStrokeWidth: 1,
-                                    ),
-                                  ),
-                                )
-                                .toList(),
+                        polygons: polygons.entries.expand(
+                              (entry) => entry.value.map(
+                                (polygonPoints) => Polygon(
+                              points: polygonPoints,
+                              color: _getColorByCountry(entry.key),
+                              borderStrokeWidth: 1,
+                            ),
+                          ),
+                        ).toList(),
+                      ),
+                      MarkerLayer(
+                        markers: countryCenters.entries.map((entry) {
+                          return Marker(
+                            point: entry.value,
+                            width: 100,
+                            height: 30,
+                            child: Container(
+                              padding: EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.7),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                entry.key,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ],
                   );
@@ -154,7 +176,6 @@ class _HomePageState extends State<HomePage> {
           child: TextField(
             controller: VM_HomePage.searchCountry,
             style: TextStyle(fontSize: 13),
-            // onChanged: (value) => ShowAllData(),
             decoration: InputDecoration(
               hintText: "Bạn đang tìm kiếm gì?",
               hintStyle: TextStyle(fontSize: 13),

@@ -34,6 +34,42 @@ class HomePageViewModel extends ChangeNotifier {
     return countryPolygons;
   }
 
+  Future<Map<String, LatLng>> CalculateCountryCenters(Map<String, dynamic> data) async {
+    final Map<String, LatLng> centers = {};
+
+    data.forEach((country, countryData) {
+      try {
+        final coordinates = countryData['coordinates'] as List<dynamic>? ?? []; // Thêm null check
+
+        double totalLat = 0;
+        double totalLng = 0;
+        int pointCount = 0;
+
+        for (var polygon in coordinates) {
+          if (polygon is List) { // Thêm kiểm tra kiểu
+            for (var point in polygon) {
+              if (point is List && point.length >= 2) { // Đảm bảo point có đủ 2 phần tử
+                totalLat += point[1]; // latitude
+                totalLng += point[0]; // longitude
+                pointCount++;
+              }
+            }
+          }
+        }
+
+        if (pointCount > 0) {
+          centers[country] = LatLng(
+            totalLat / pointCount,
+            totalLng / pointCount,
+          );
+        }
+      } catch (e) {
+        print('Error calculating center for $country: $e');
+      }
+    });
+
+    return centers;
+  }
   List<List<LatLng>> _findPolygonsByISO(
     GeoJSONFeatureCollection geoJson,
     String isoCode,
